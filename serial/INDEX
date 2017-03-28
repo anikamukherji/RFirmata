@@ -1,0 +1,13 @@
+close.serialConnection
+                        Function to close an serial interface.
+isOpen                  Generic function for isOpen
+isOpen.default          Default function from base-package
+isOpen.serialConnection
+                        Tests whether the connection is open or not
+listPorts               Lists the serial interfaces.
+open.serialConnection   Function to initialize an serial interface.
+read.serialConnection   Reads from the serial interface.
+serial                  A serial communication interface for R.
+serialConnection        Sets up the interface parameters.
+write.serialConnection
+                        Wirtes data to serial interface.
