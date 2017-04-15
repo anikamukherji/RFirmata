@@ -1,7 +1,6 @@
 library(methods)
 
-# choose CRAN mirror of your choice
-#install.packages("tcltk2", repos = "http://cran.us.r-project.org")
+# import all the serial packages
 require(tcltk)
 source("./serial/R/init.R")
 source("./serial/R/listPorts.R")
@@ -15,6 +14,25 @@ source("./serial/R/serial.R")
 # write.serialConnection(connection, message)
 # to read...
 # read.serialConnection(connection)
+
+##########################################################
+######## This is based off the Python API for the ########
+############ Firmata Procol as seen below ################
+##########################################################
+#
+# Python API for the Firmata protocol
+# Copyright (C) 2008  laboratorio (info@laboratorio.us)
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+##########################################################
 
 
 # constant values
@@ -60,18 +78,13 @@ Arduino <- setRefClass("Arudino",
                        )
 
 
-# start writing methods
-
+# function to print ouit board object
 str <- function(board){
   print("Arduino: ")
   print(board$port) 
 }
 
-# need to figure out how serial works in R
-#pin_mode <- function(board, pin, mode){
-  #board$serial
-#}
-
+# after creating a board, call init because
 # we will need to initialize all of the object variables
 init <- function(board){
   board$wait = 0
@@ -88,6 +101,7 @@ init <- function(board){
   board$minor_version = 0
 }
 
+# Set major and minor version
 set_version <- function(board, major, minor){
   board$major_version = major
   board$minor_version = minor
@@ -97,6 +111,9 @@ set_version <- function(board, major, minor){
 # board is where we will get all of our information
 #print(class(serial))
 
+# function just to establish connection using a the variables 
+# of a board (already instantiated and inintialized)
+# returns a serial connection object
 make_connection <- function(board, con_name){
 
   serial = serialConnection(name=con_name, port=board$port, mode="115200,n,8,2")
@@ -104,6 +121,7 @@ make_connection <- function(board, con_name){
   return(serial)
 }
 
+# set pin mode
 pin_mode <- function(con, pin, mode){
   
   write.serialConnection(con, rawToChar(SET_PIN_MODE))
@@ -112,6 +130,8 @@ pin_mode <- function(con, pin, mode){
   print("executed")
 }
 
+# read digitital data
+# Arduino uses fake digital mode
 digital_read <- function(con, board, pin){
   
   x = bitwAnd(pin, 0x07)
@@ -120,6 +140,7 @@ digital_read <- function(con, board, pin){
   return(bitwAnd(second_shift, 0x01))
 }
 
+# write digital values
 digital_write <- function(con, board, pin, value){
 
   port_number = bitwAnd(bitwShiftR(pin, 3), 0x0F)
@@ -142,12 +163,13 @@ digital_write <- function(con, board, pin, value){
                                                 7)))
 }
 
-
+# read analog values
 analog_read <- function(board, pin){
   return(board$analog_input_data[pin])
 }
 
 
+# write analog values
 analog_write <- function(con, board, pin, value){
 
   x = bitwAnd(pin, 0x0F)
@@ -158,20 +180,20 @@ analog_write <- function(con, board, pin, value){
 }
 
 
-set_version <- function(board, minor, major){
-  board$major_version = major
-  board$minor_version = minor
-}
 
-
+# determine if connection is open
 available <- function(con){
   return isOpen(con)
 }
 
+# delay the system by some amount of seconds
 delay <- function(seconds){
   Sys.sleep(seconds)
 }
 
+
+# read data from the connection
+# call the process function
 parse <- function(board, con){
   data = read.serialConnection(con)
   if (data != ""){
@@ -179,7 +201,8 @@ parse <- function(board, con){
   }
 }
 
-
+# process incoming data
+# this function is a bit of a beast
 process <- function(board, con, indata){
 
   command = NA
@@ -216,6 +239,7 @@ process <- function(board, con, indata){
 }
 
 
+# report analog and digital pins
 report <- function(con){
 
   delay(2)
