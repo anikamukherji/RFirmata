@@ -231,7 +231,7 @@ process <- function(board, con, indata){
       } else {
           command = indata 
       }    
-      if (command == DIGITAL MESSAGE or command == ANALOG_MSESAGE or command == REPORT_VERSION){
+      if (command == DIGITAL MESSAGE or command == ANALOG_MESSAGE or command == REPORT_VERSION){
         board$wait_for_data = 2
         board$exec_multibyte_cmd = command
       }
@@ -255,6 +255,7 @@ report <- function(con){
 }
 
 
+# when trying to run this, we need to find out what port we are connected to
 myard <- Arduino$new(port=7)
 init(myard)
 print(analog_read(myard, 8))
